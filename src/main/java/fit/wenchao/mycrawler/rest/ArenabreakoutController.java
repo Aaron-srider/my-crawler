@@ -1,7 +1,5 @@
 package fit.wenchao.mycrawler.rest;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -17,20 +15,13 @@ import fit.wenchao.mycrawler.utils.ResponseEntityUtils;
 import fit.wenchao.mycrawler.utils.http.HttpClientRequestBuilder;
 import fit.wenchao.mycrawler.utils.http.HttpClientResponseWrapper;
 import org.apache.http.HttpEntity;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +42,7 @@ public class ArenabreakoutController {
     GunSortTranslationDao gunSortTranslationDao;
 
     @GetMapping("/sync/gun")
-    public ResponseEntity<JsonResult> getGunList() throws IOException {
+    public ResponseEntity<JsonResult> syncGunList() throws IOException {
         HttpClientResponseWrapper httpClientResponseWrapper =
                 HttpClientRequestBuilder.getInstance()
                                         .get(prefix + "/gun.json")
@@ -86,13 +77,13 @@ public class ArenabreakoutController {
         //}
 
 
-
         for (GunPO gunPO : gunPOList) {
             String itemID = gunPO.getItemID();
             GunPO exists = gunDao.getById(itemID);
-            if(exists != null) {
+            if (exists != null) {
                 gunDao.updateById(gunPO);
-            } else {
+            }
+            else {
                 gunDao.save(gunPO);
             }
         }
@@ -102,11 +93,12 @@ public class ArenabreakoutController {
 
             GunAttrTranslationPO exists = gunAttrTranslationDao.getOne(new QueryWrapper<GunAttrTranslationPO>().eq("name",
                     name), false);
-            if(exists != null) {
+            if (exists != null) {
                 gunAttrTranslationDao.update(new UpdateWrapper<GunAttrTranslationPO>()
                         .set("detail", gunAttrTranslationPO.getDetail())
-                        .eq("name" ,name));
-            } else {
+                        .eq("name", name));
+            }
+            else {
                 gunAttrTranslationDao.save(gunAttrTranslationPO);
             }
 
@@ -117,9 +109,10 @@ public class ArenabreakoutController {
             String id = gunSortTranslationPO.getId();
 
             GunSortTranslationPO exists = gunSortTranslationDao.getById(id);
-            if(exists != null) {
+            if (exists != null) {
                 gunSortTranslationDao.updateById(gunSortTranslationPO);
-            } else {
+            }
+            else {
                 gunSortTranslationDao.save(gunSortTranslationPO);
             }
 
@@ -127,4 +120,28 @@ public class ArenabreakoutController {
 
         return ResponseEntityUtils.ok(JsonResult.ok());
     }
+
+
+    @GetMapping("/gun")
+    public ResponseEntity<JsonResult> getGunList(String sortId) {
+        List<GunPO> list = new ArrayList<>();
+        if (sortId == null || sortId.isEmpty()) {
+            list = gunDao.list();
+        }
+        else {
+            list = gunDao.list(new QueryWrapper<GunPO>().eq("item_sort_id", sortId));
+        }
+        return ResponseEntityUtils.ok(JsonResult.ok(list));
+    }
+
+    @GetMapping("/gun-sort")
+    public ResponseEntity<JsonResult> getGunSortList() {
+        return ResponseEntityUtils.ok(JsonResult.ok(gunSortTranslationDao.list()));
+    }
+
+    @GetMapping("/gun-attr")
+    public ResponseEntity<JsonResult> getGunAttr() {
+        return ResponseEntityUtils.ok(JsonResult.ok(gunAttrTranslationDao.list()));
+    }
+
 }
