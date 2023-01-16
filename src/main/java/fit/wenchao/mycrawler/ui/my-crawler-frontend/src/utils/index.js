@@ -176,6 +176,17 @@ function process_case(value, ...args) {
 }
 
 export class ArrayUtils {
+  static max(array, compare) {
+    let max_elem = array[0]
+    for (let i = 0; i < array.length; i++) {
+      const item = array[i]
+      if (compare(max_elem, item) < 0) {
+        max_elem = item
+      }
+    }
+    return max_elem
+  }
+
   static remove(array, predicate) {
     let idx = 0
     for (let i = 0; i < array.length; i++) {
@@ -197,6 +208,32 @@ export class ArrayUtils {
     }
 
     return null
+  }
+
+  static swap(array, i1, i2) {
+    [array[i1], array[i2]] = [array[i2], array[i1]]
+  }
+
+  static toFirst(array, predicate) {
+    for (let i = 0; i < array.length; i++) {
+      const item = array[i]
+      if (predicate(item) === true) {
+        array.splice(i, 1)
+        array.splice(0, 0, item)
+        return
+      }0
+    }
+  }
+
+  static toIndex(array, predicate, index) {
+    for (let i = 0; i < array.length; i++) {
+      const item = array[i]
+      if (predicate(item) === true) {
+        array.splice(i, 1)
+        array.splice(index, 0, item)
+        return
+      }0
+    }
   }
 }
 
@@ -367,4 +404,8 @@ export function isPrimitiveValue(value) {
   }
 
   return false
+}
+
+export function is_mobile() {
+  return /Android|iPhone|iPad|iPod|BlackBerry|webOS|Windows Phone|SymbianOS|IEMobile|Opera Mini/i.test(navigator.userAgent)
 }
